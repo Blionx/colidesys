@@ -1,0 +1,3 @@
+D:/geoMadnes/build/CMakeFiles/GeoMadness.dir
+D:/geoMadnes/build/CMakeFiles/ALL_BUILD.dir
+D:/geoMadnes/build/CMakeFiles/ZERO_CHECK.dir
