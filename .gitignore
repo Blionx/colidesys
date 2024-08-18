@@ -20,12 +20,9 @@
 *.mod
 *.smod
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-
 # Executables
 *.exe
 *.out
 *.app
+
+/build/*.*

@@ -1,31 +1,25 @@
-cmake_minimum_required(VERSION 3.10)
-
-# Nombre del proyecto
-project(GeoMadness)
-
+cmake_minimum_required(VERSION 3.16)
+project(CMakeSFMLProject LANGUAGES CXX)
 # Establece el estándar de C++
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17) 
 
-#Ruta a carpeta de SFML
-set(SFML_DIR "${CMAKE_SOURCE_DIR}/libs/SFML")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
-# Agrega los directorios de encabezados
-include_directories("${CMAKE_SOURCE_DIR}/include")
-include_directories("${SFML_DIR}/include")
+include(FetchContent)
+FetchContent_Declare(SFML
+    GIT_REPOSITORY https://github.com/SFML/SFML.git
+    GIT_TAG 2.6.x)
+FetchContent_MakeAvailable(SFML)
 
+add_executable(main src/main.cpp)
+target_link_libraries(main PRIVATE sfml-graphics)
+target_compile_features(main PRIVATE cxx_std_17)
 
-file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
-
-# Configura el ejecutable
-add_executable(${PROJECT_NAME} ${SOURCES})
-
-# Vincula SFML
-target_link_libraries(${PROJECT_NAME} 
-    "${SFML_DIR}/lib/*.lib"
-)
-
-# Copia las DLLs necesarias
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${SFML_DIR}/bin" $<TARGET_FILE_DIR:${PROJECT_NAME}>
-)
+if(WIN32)
+    add_custom_command(
+        TARGET main
+        COMMENT "Copy OpenAL DLL"
+        PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SFML_SOURCE_DIR}/extlibs/bin/$<IF:$<EQUAL:${CMAKE_SIZEOF_VOID_P},8>,x64,x86>/openal32.dll $<TARGET_FILE_DIR:main>
+        VERBATIM)
+endif()
