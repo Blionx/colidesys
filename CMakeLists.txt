@@ -3,6 +3,7 @@ project(CMakeSFMLProject LANGUAGES CXX)
 # Establece el estándar de C++
 set(CMAKE_CXX_STANDARD 17) 
 
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
@@ -18,6 +19,7 @@ add_executable(main src/main.cpp)
 target_link_libraries(main PRIVATE sfml-graphics)
 target_compile_features(main PRIVATE cxx_std_17)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if(WIN32)
     add_custom_command(
         TARGET main

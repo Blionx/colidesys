@@ -11,18 +11,10 @@ Game::Game(){
   // Create a graphical text to display
   if (!font.loadFromFile("tuffy.ttf"))
     std::cout <<"ERROR FONT! \n";
-  
-  std::string str = "Numero de elementos = " + std::to_string(elm_count);
 
-  text = sf::Text(str.c_str(), font, 30);
-
-   for( int i = 0 ; i < 1000; i++)
+   for( int i = 0 ; i < 5; i++)
   {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distr1(0, 1024);
-    std::uniform_int_distribution<> distr2(0, 768);
-    elements_.push_back(GenerateTriangle(distr1(gen), distr2(gen), 5.f));
+    AddElements();
   }
 }
 
@@ -37,8 +29,10 @@ void Game::Draw(){
   // Draw the string
   window_.draw(text);
 
-  for (sf::Shape* elm : elements_) {
-    window_.draw(*elm);
+  auto current = elmList_.head;
+  while (current != nullptr) {
+      window_.draw(*current->data);
+      current = current->next;
   }
 
 
@@ -46,7 +40,7 @@ void Game::Draw(){
   window_.display();
 }
 
-void Game::Update() {
+void Game::Update(float deltaTime) {
    // Clear screen
   window_.clear();
 
@@ -56,7 +50,11 @@ void Game::Update() {
 
   // Draw the string
   window_.draw(text);
-  for (sf::Shape* elm : elements_) {
+
+  auto current = elmList_.head;
+  while (current != nullptr) {
+    sf::Shape* elm = current->data;
+
     sf::Vector2f pos = elm->getPosition();
     if(pos.x > 1024)
       elm->setPosition(0,pos.y);
@@ -66,18 +64,22 @@ void Game::Update() {
       elm->setPosition(pos.x,0);
     if(pos.y<0)
       elm->setPosition(pos.x,768);
+    
+    pos = elm->getPosition();
+    float x = pos.x += 10;
+    float y = pos.y += 1;
+    float pos_x =( x * speed) * deltaTime;
+    float pos_y =( y * speed) * deltaTime;
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> distr1(-2.5f, 5.5f);
-    std::uniform_real_distribution<> distr2(-2.5f, 5.5f);
-    float x = distr1(gen);
-    float y = distr2(gen);
-
-    elm->move(x, y);
+    elm->move(pos_x, pos_y);
     window_.draw(*elm);
+     
+    current = current->next;
   }
 
+  //title = "Numero de elementos = " + std::to_string(elm_count) + " Speed = "  + std::to_string(speed);
+
+  //text = sf::Text(title.c_str(), font, 30);
   // Update the window
   window_.display();
 }
@@ -109,20 +111,48 @@ sf::ConvexShape* Game::GenerateTriangle(float posx, float posy, float size)
     return triangle;
 }
 
+void Game::AddElements() {
+  std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distr1(0, 1024);
+    std::uniform_int_distribution<> distr2(0, 768);
+    elmList_.insertAtEnd(GenerateTriangle(distr1(gen), distr2(gen), 5.f));
+    elm_count ++;
+}
+void Game::RemoveElements()
+{
+  elmList_.deleteAtIndex(elmList_.size() - 1 );
+  elm_count --;
+}
+
 void Game::Run()
 {
    // Start the game loop
     while (window_.isOpen())
     {
+      float deltaTime = clock.restart().asSeconds();
         // Process events
         sf::Event event;
         while (window_.pollEvent(event))
         {
             // Close window: exit
-            if (event.type == sf::Event::Closed)
-                window_.close();
+            if (event.type == sf::Event::Closed) {
+              window_.close();
+            } else if (event.type == sf::Event::KeyPressed)
+            {
+              if (event.key.code == sf::Keyboard::W) {
+                IncreaseSpeed();
+              } else if (event.key.code == sf::Keyboard::S) {
+                DecreaseSpeed();
+              }else if (event.key.code == sf::Keyboard::A) {
+                RemoveElements();
+              }else if (event.key.code == sf::Keyboard::D) {
+                AddElements();
+              }
+            }
+                
         }
 
-        this->Update();
+        this->Update(deltaTime);
     }
 }
